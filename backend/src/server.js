@@ -112,6 +112,7 @@ app.get("/pages", requireAuth, async (req, res) => {
   try {
     const response = await axios.get(url);
     // Lưu danh sách page và token của chúng vào session để dùng sau
+    console.log ("RESPONSE DATA", response.data);
     req.session.pages = response.data.data;
     res.json(response.data);
   } catch (error) {
