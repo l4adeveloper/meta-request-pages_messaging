@@ -208,7 +208,7 @@ const handleLogout = () => {
       setSelectedConversation(null);
       setMessages([]);
       console.log ("SELECTED PAGE", selectedPage)
-      fetch(`${API_BASE_URL}/meta/pages/${selectedPage}/conversations`, {
+      fetch(`${API_BASE_URL}/meta/pages/${selectedPage.id}/conversations`, {
         headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token},
       })
         .then(async (res) => {
@@ -235,7 +235,7 @@ const handleLogout = () => {
   // Effect lấy messages khi chọn conversation (giữ nguyên)
   useEffect(() => {
     if (selectedConversation && isMetaConnected) {
-      const url = `${API_BASE_URL}/meta/conversations/${selectedConversation.id}/messages?pageId=${selectedPage}`;
+      const url = `${API_BASE_URL}/meta/conversations/${selectedConversation.id}/messages?pageId=${selectedPage.id}`;
       fetch(url, { headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token } })
         .then((res) => res.json())
         .then((data) => setMessages(data.error ? [] : data))
@@ -270,7 +270,7 @@ const handleLogout = () => {
       setIsMetaConnected(false);
       setPermissions([]);
       setPages([]);
-      setSelectedPage("");
+      setSelectedPage(null);
       setConversations([]);
       setSelectedConversation(null);
       setMessages([]);
@@ -291,7 +291,7 @@ const handleLogout = () => {
         Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token
       },
       body: JSON.stringify({
-        pageId: selectedPage,
+        pageId: selectedPage.id,
         psid: selectedConversation.psid,
         message: newMessage,
       }),
