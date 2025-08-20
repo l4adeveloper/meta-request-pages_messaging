@@ -234,7 +234,17 @@ const handleLogout = () => {
   // --- Handlers ---
   // ADDED: Các hàm xử lý connect và disconnect
   const handleConnectMeta = () => {
-    window.location.href = `${API_BASE_URL}/meta/connect`;
+    fetch(`${API_BASE_URL}/meta/connect`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(res => res.json())
+    .then(data => {
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      } else 
+        console.error("Meta authentication failed:", data.error);
+    })
+    .catch(err => console.error("Meta authentication failed:", err));
   };
 
   const handleDisconnect = () => {
@@ -274,6 +284,18 @@ const handleLogout = () => {
     }).catch((err) => console.error("Send message request failed:", err));
   };
 
+   // FIXED: Hàm xử lý khi chọn một page
+  const handlePageSelect = (e) => {
+      const pageId = e.target.value;
+      if (!pageId) {
+          setSelectedPage(null);
+          return;
+      }
+      // Tìm cả object page trong danh sách pages đã fetch
+      const pageObject = pages.find(p => p.id === pageId);
+      setSelectedPage(pageObject);
+  };
+
   // --- Render ---
   return (
     <div style={styles.container}>
@@ -309,7 +331,7 @@ const handleLogout = () => {
               </div>
               <select
                 style={styles.pageSelector}
-                value={selectedPage}
+                value={selectedPage ? selectedPage.id : ""}
                 onChange={(e) => setSelectedPage(e.target.value)}
               >
                 <option value="">-- Chọn Page --</option>

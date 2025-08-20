@@ -87,7 +87,7 @@ app.get("/meta/connect", verifyToken, (req, res) => {
     const state = userId; // Dùng userId làm tham số state để biết ai đang kết nối
     const scope = "pages_show_list,pages_messaging,pages_read_engagement";
     const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}&response_type=code&state=${state}`;
-    res.redirect(authUrl);
+    res.json({ authUrl: authUrl });
 });
 
 app.get("/meta/callback", async (req, res) => {
