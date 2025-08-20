@@ -299,16 +299,29 @@ const handleLogout = () => {
   };
 
    // FIXED: Hàm xử lý khi chọn một page
-  const handlePageSelect = (e) => {
-      const pageId = e.target.value;
-      if (!pageId) {
-          setSelectedPage(null);
-          return;
-      }
-      // Tìm cả object page trong danh sách pages đã fetch
-      const pageObject = pages.find(p => p.id === pageId);
-      setSelectedPage(pageObject);
-  };
+  // Thay thế hàm handlePageSelect cũ bằng hàm này trong Dashboard.js
+
+const handlePageSelect = (e) => {
+    const pageId = e.target.value;
+    console.log("--- BẮT ĐẦU DEBUG ---");
+    console.log("1. ID của Page vừa chọn từ dropdown:", pageId);
+
+    if (!pageId) {
+        setSelectedPage(null);
+        return;
+    }
+
+    // In ra để xem danh sách pages có dữ liệu hay chưa
+    console.log("2. Đang tìm kiếm trong danh sách pages sau:", pages);
+    
+    const pageObject = pages.find((p) => p.id === pageId);
+
+    // In ra kết quả của việc tìm kiếm
+    console.log("3. Đã tìm thấy object page tương ứng:", pageObject);
+    
+    setSelectedPage(pageObject);
+    console.log("--- KẾT THÚC DEBUG ---");
+};
 
   // --- Render ---
   return (
