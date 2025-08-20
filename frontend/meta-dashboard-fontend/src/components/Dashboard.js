@@ -346,7 +346,7 @@ const handleLogout = () => {
               <select
                 style={styles.pageSelector}
                 value={selectedPage ? selectedPage.id : ""}
-                onChange={(e) => setSelectedPage(e.target.value)}
+                onChange={handlePageSelect}
               >
                 <option value="">-- Chọn Page --</option>
                 {pages.map((p) => (
