@@ -71,6 +71,13 @@ app.get("/auth/callback", async (req, res) => {
     req.session.accessToken = longLivedToken;
     console.log("User logged in, token stored in session.");
 
+    req.session.save ((err) => {
+      if (err) {
+        console.error("Error saving session:", err);
+        return res.status(500).send("Error saving session.");
+      }
+    });
+    console.log("Session saved successfully, redirecting...");
     // Chuyển hướng về trang Dashboard của frontend
     const frontendDashboardUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`;
     res.redirect(frontendDashboardUrl);
