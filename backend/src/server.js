@@ -240,6 +240,7 @@ app.get("/meta/pages/:pageId/conversations", verifyToken, async (req, res) => {
     });
 
     // Đơn giản hóa dữ liệu trả về cho frontend
+    console.log ("response.data: ", response.data);
     const formattedConversations = response.data.data.map(conv => {
       const user = conv.participants.data.find(p => p.id !== pageId);
       return {

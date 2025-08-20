@@ -210,9 +210,22 @@ const handleLogout = () => {
       fetch(`${API_BASE_URL}/meta/pages/${selectedPage}/conversations`, {
         headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token  },
       })
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || "API call failed");
+          }
+          return res.json();
+            
+        } )
         .then((data) => setConversations(data.error ? [] : data))
-        .catch((err) => console.error("Fetch conversations failed:", err));
+        .catch((err) => {
+          console.error("Fetch conversations failed:", err);
+          if (err.message.toLowerCase().includes("token")) {
+            alert("Connect with Meta is expired. Please disconnect and connect again.");
+            handleDisconnect();
+          }
+        } )
     } else {
       setConversations([]);
     }
