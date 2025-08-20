@@ -207,8 +207,9 @@ const handleLogout = () => {
     if (selectedPage && isMetaConnected) {
       setSelectedConversation(null);
       setMessages([]);
+      console.log ("SELECTED PAGE", selectedPage)
       fetch(`${API_BASE_URL}/meta/pages/${selectedPage}/conversations`, {
-        headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token  },
+        headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token},
       })
         .then(async (res) => {
           if (!res.ok) {
