@@ -66,10 +66,6 @@ app.get("/auth/callback", async (req, res) => {
     req.session.accessToken = longLivedToken;
     console.log("User logged in, token stored in session.");
 
-    // ===== THÊM 2 DÒNG NÀY VÀO =====
-    console.log("SESSION ID KHI TẠO:", req.sessionID);
-    console.log("ACCESS TOKEN ĐÃ LƯU:", req.session.accessToken);
-
     // Chuyển hướng về trang Dashboard của frontend
     res.redirect("https://localhost:3000/dashboard");
   } catch (error) {
@@ -83,8 +79,8 @@ app.get("/auth/callback", async (req, res) => {
 
 // Middleware kiểm tra đã đăng nhập chưa
 const requireAuth = (req, res, next) => {
-  console.log("Đang authorize:");
-  console.log("REQ SESSION:", req.session);
+  // console.log("Đang authorize:");
+  // console.log("REQ SESSION:", req.session);
   if (!req.session.accessToken) {
     return res.status(401).json({ error: "Not authenticated" });
   }
@@ -94,9 +90,9 @@ const requireAuth = (req, res, next) => {
 // Endpoint 3: Lấy danh sách quyền đã được cấp
 app.get("/permissions", requireAuth, async (req, res) => {
   // ===== THÊM 3 DÒNG NÀY VÀO =====
-  console.log("=====================");
-  console.log("SESSION ID KHI GỌI /permissions:", req.sessionID);
-  console.log("ACCESS TOKEN TRONG SESSION:", req.session.accessToken);
+  /* console.log("=====================");
+   console.log("SESSION ID KHI GỌI /permissions:", req.sessionID);
+  console.log("ACCESS TOKEN TRONG SESSION:", req.session.accessToken);*/
   // ================================
   const userToken = req.session.accessToken;
   const url = `https://graph.facebook.com/me/permissions?access_token=${userToken}`;
@@ -155,7 +151,9 @@ app.get("/webhook", (req, res) => {
 });
 
 app.post("/webhook", (req, res) => {
+  console.log("!!! POST WEBHOOK ĐÃ ĐƯỢC GỌI TỚI !!!"); 
   const body = req.body;
+    console.log(JSON.stringify(body, null, 2)); // In ra toàn bộ nội dung webhook
 
   if (body.object === "page") {
     body.entry.forEach(function (entry) {
@@ -185,6 +183,7 @@ app.post("/send-message", requireAuth, async (req, res) => {
 
   // Lấy đúng page access token của trang đã chọn, được lưu trong session
   const page = req.session.pages?.find((p) => p.id === pageId);
+  console.log ("DEP TRAI 0")
   if (!page) {
     return res.status(404).send("Page not found or not connected.");
   }
@@ -192,6 +191,7 @@ app.post("/send-message", requireAuth, async (req, res) => {
 
   // Demo: Gửi tin nhắn đến PSID mới nhất đã nhắn tin cho trang
   const psid = psidList.length > 0 ? psidList[psidList.length - 1] : null;
+  console.log ("DEP TRAI 1")
   if (!psid) {
     return res
       .status(400)
@@ -199,6 +199,7 @@ app.post("/send-message", requireAuth, async (req, res) => {
         "No user (PSID) to send message to. Please send a message to your page first."
       );
   }
+  console.log ("DEP TRAI 2")
 
   const msgUrl = `https://graph.facebook.com/v19.0/me/messages`; // Dùng "me" vì đã có page access token
   const msgBody = {
@@ -209,6 +210,7 @@ app.post("/send-message", requireAuth, async (req, res) => {
   };
 
   try {
+    console.log("XAU TRAI")
     await axios.post(msgUrl, msgBody, {
       params: { access_token: pageAccessToken },
     });

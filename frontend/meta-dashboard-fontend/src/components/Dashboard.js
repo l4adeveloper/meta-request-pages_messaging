@@ -50,8 +50,8 @@ function Dashboard() {
       body: JSON.stringify({ pageId: selectedPage, message })
     })
       .then(res => res.json())
-      .then(() => alert("Message sent"))
-      .catch(() => alert("Error sending message"));
+      .then(() => {console.log ("ĐÃ GỬI TIN NHẮN");alert("Messagea sent")})
+      .catch(() => alert("Error sendinga message"));
   };
 
   return (
