@@ -9,7 +9,7 @@ function Dashboard() {
   const [message, setMessage] = useState("");
   const [connected, setConnected] = useState(false);
 
-  const getApiUrl = (path) => `${API_URL}/${path}`;
+  const getApiUrl = (path) => `${API_URL}${path}`;
 
   const fetchPermissions = () => {
     fetch(getApiUrl("/permissions"), { credentials: "include" })
