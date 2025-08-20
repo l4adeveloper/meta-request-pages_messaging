@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 function Dashboard() {
   const [permissions, setPermissions] = useState([]);
   const [pages, setPages] = useState([]);
@@ -7,17 +9,20 @@ function Dashboard() {
   const [message, setMessage] = useState("");
   const [connected, setConnected] = useState(false);
 
+  const getApiUrl = (path) => `${API_URL}/${path}`;
+
   const fetchPermissions = () => {
-    fetch("https://localhost:5000/permissions", { credentials: "include" })
+    fetch(getApiUrl("/permissions"), { credentials: "include" })
       .then(res => res.json())
       .then(data => {
+        if (data.error) return alert(data.error);
         setPermissions(data.data || []);
         setConnected((data.data || []).some(p => p.permission === "pages_messaging" && p.status === "granted"));
       });
   };
 
   const fetchPages = () => {
-    fetch("https://localhost:5000/pages", { credentials: "include" })
+    fetch(getApiUrl("/pages"), { credentials: "include" })
       .then(res => res.json())
       .then(data => setPages(data.data || []));
   };
@@ -28,11 +33,11 @@ function Dashboard() {
   }, []);
 
   const handleConnectMeta = () => {
-    window.location.href = "https://localhost:5000/auth/login";
+    window.location.href = getApiUrl("/auth/login");
   };
 
   const handleDisconnect = () => {
-    fetch("https://localhost:5000/disconnect", { method: "POST", credentials: "include" })
+    fetch(getApiUrl("/disconnect"), { method: "POST", credentials: "include" })
       .then(() => {
         setConnected(false);
         setPermissions([]);
@@ -43,7 +48,7 @@ function Dashboard() {
 
   const handleSendMessage = () => {
     if (!selectedPage) return alert("Chọn Page trước!");
-    fetch("https://localhost:5000/send-message", {
+    fetch(getApiUrl("/send-message"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

@@ -3,7 +3,8 @@ import React from "react";
 function Login() {
   const handleLogin = () => {
     // redirect sang backend để login Meta OAuth
-    window.location.href = "https://localhost:5000/auth/login";
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    window.location.href = `${apiUrl}/auth/login`;
   };
 
   return (

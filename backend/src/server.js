@@ -5,15 +5,18 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session"); // Thêm session
 const cors = require("cors");
-const https = require("https");
-const fs = require("fs");
 require("dotenv").config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT ||5000;
 
 // Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+}
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.json());
 // Cấu hình Session
@@ -28,7 +31,7 @@ app.use(
   })
 );
 
-let psidList = [];
+
 
 // ===================================
 // ===== PHẦN OAUTH 2.0 (MỚI) =====
@@ -69,7 +72,8 @@ app.get("/auth/callback", async (req, res) => {
     console.log("User logged in, token stored in session.");
 
     // Chuyển hướng về trang Dashboard của frontend
-    res.redirect("https://localhost:3000/dashboard");
+    const frontendDashboardUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`;
+    res.redirect(frontendDashboardUrl);
   } catch (error) {
     console.error(
       "Error during auth callback:",
@@ -136,6 +140,8 @@ app.post("/disconnect", (req, res) => {
 // ===================================
 // ===== CÁC ENDPOINT CŨ (CẬP NHẬT) =====
 // ===================================
+
+let psidList = [];
 
 app.get("/webhook", (req, res) => {
   const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
