@@ -229,9 +229,12 @@ app.get("/meta/pages/:pageId/conversations", verifyToken, async (req, res) => {
   const { pageId } = req.params;
   const pageAccessToken = req.headers['x-page-access-token'];
     if (!pageAccessToken) return res.status(403).json({ error: "Meta account not connected." });
-
+  console.log ("DEP TRAI 1")
   const url = `https://graph.facebook.com/v19.0/${pageId}/conversations`;
+      console.log("DEP TRAI 2")
+
   try {
+    console.log("DEP TRAI 3")
     const response = await axios.get(url, {
       params: {
         fields: 'participants,snippet,updated_time',
