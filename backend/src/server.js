@@ -13,7 +13,7 @@ const app = express();
 const PORT = 5000;
 
 // Middleware
-app.use(cors({ origin: "https://localhost:3000", credentials: true }));
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(cookieParser());
 app.use(bodyParser.json());
 // Cấu hình Session
@@ -22,7 +22,9 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true, httpOnly: true, sameSite: "none" }, // Chuyển thành true nếu dùng HTTPS
+    cookie: { secure: process.env.NODE_ENV === "production", // chỉ bật secure khi deploy
+  httpOnly: true,
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" }, // Chuyển thành true nếu dùng HTTPS
   })
 );
 
@@ -224,11 +226,6 @@ app.post("/send-message", requireAuth, async (req, res) => {
   }
 });
 
-const options = {
-  key: fs.readFileSync('./localhost+2-key.pem'), // Đường dẫn tới file key
-  cert: fs.readFileSync('./localhost+2.pem')    // Đường dẫn tới file cert
-};
-
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`Server running securely on https://localhost:${PORT}`);
-});
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+})
