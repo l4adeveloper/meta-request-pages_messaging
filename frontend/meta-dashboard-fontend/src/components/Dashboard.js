@@ -327,6 +327,32 @@ function Dashboard() {
     console.log("--- KẾT THÚC DEBUG ---");
   };
 
+  // Thêm hàm handler mới
+  const handleSubscribePage = () => {
+    if (!selectedPage) {
+      alert("Vui lòng chọn một trang trước.");
+      return;
+    }
+
+    fetch(`${API_BASE_URL}/meta/pages/${selectedPage.id}/subscribe`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-Page-Access-Token": selectedPage.access_token,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          alert(data.message);
+        } else {
+          alert(
+            `Lỗi: ${data.error}\nChi tiết: ${JSON.stringify(data.details)}`
+          );
+        }
+      });
+  };
+
   // Thêm 2 hàm xử lý OTN
   const handleOfferOtn = () => {
     if (!selectedConversation)
@@ -431,6 +457,17 @@ function Dashboard() {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={handleSubscribePage}
+                style={{
+                  marginTop: "10px",
+                  width: "100%",
+                  padding: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                Kích hoạt Webhook cho Trang này
+              </button>
             </>
           ) : (
             <button style={styles.connectButton} onClick={handleConnectMeta}>

@@ -18,7 +18,7 @@ exports.connect = (req, res) => {
   const userId = req.user.id;
   const state = userId;
   const scope =
-    "pages_show_list,pages_messaging,pages_read_engagement,pages_utility_messaging,pages_manage_metadata,pages_messaging_subscriptions"; // Thêm các quyền khác nếu cần
+    "pages_show_list,pages_messaging,pages_read_engagement,pages_utility_messaging,pages_manage_metadata"; // Thêm các quyền khác nếu cần
   const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}&response_type=code&state=${state}`;
   res.json({ authUrl });
 };
@@ -318,6 +318,41 @@ exports.offerOtn = async (req, res) => {
   } catch (error) {
     console.error("Error sending OTN offer:", error.response?.data?.error);
     res.status(500).json({ error: "Failed to send OTN offer." });
+  }
+};
+
+// controllers/meta.controller.js
+exports.subscribePage = async (req, res) => {
+  const { pageId } = req.params;
+  const pageAccessToken = req.headers["x-page-access-token"];
+
+  if (!pageAccessToken) {
+    return res.status(403).json({ error: "Page Access Token is required." });
+  }
+
+  const url = `https://graph.facebook.com/v19.0/${pageId}/subscribed_apps`;
+
+  try {
+    await axios.post(url, null, {
+      // Body có thể là null
+      params: {
+        subscribed_fields: "messages,messaging_optins,messaging_postbacks", // Các sự kiện bạn muốn nhận
+        access_token: pageAccessToken,
+      },
+    });
+    res.json({
+      success: true,
+      message: `Successfully subscribed page ${pageId} to webhook events.`,
+    });
+  } catch (error) {
+    console.error(
+      "Error subscribing page to webhooks:",
+      error.response?.data?.error
+    );
+    const metaError = error.response?.data?.error;
+    res
+      .status(500)
+      .json({ error: "Failed to subscribe page.", details: metaError });
   }
 };
 

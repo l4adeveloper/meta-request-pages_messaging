@@ -31,6 +31,13 @@ router.post("/send-message", verifyToken, metaController.sendMessage);
 router.get("/webhook", metaController.verifyWebhook);
 router.post("/webhook", metaController.handleWebhook);
 
+// routes/meta.routes.js
+router.post(
+  "/pages/:pageId/subscribe",
+  verifyToken,
+  metaController.subscribePage
+);
+
 // OTN Tokens
 router.post("/offer-otn", verifyToken, metaController.offerOtn);
 router.post("/send-otn", verifyToken, metaController.sendOtn);
