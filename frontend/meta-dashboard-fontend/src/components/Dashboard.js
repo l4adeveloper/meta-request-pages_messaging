@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 // --- Styling (Giữ nguyên và bổ sung) ---
 const styles = {
   container: {
@@ -139,7 +138,7 @@ function Dashboard() {
   const [isMetaConnected, setIsMetaConnected] = useState(false); // ADDED: State quản lý kết nối
   const [permissions, setPermissions] = useState([]); // ADDED: State cho permissions
   const [pages, setPages] = useState([]);
-    const [selectedPage, setSelectedPage] = useState(null); 
+  const [selectedPage, setSelectedPage] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -147,48 +146,43 @@ function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token"); // Lấy token để sử dụng trong các hàm
 
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Xoa token trong localStorage
+    navigate("/login"); // Chuyển đến trang login
+  };
 
-const handleLogout = () => {
-  localStorage.removeItem("token"); // Xoa token trong localStorage
-  navigate("/login"); // Chuyển đến trang login
-};
-
-  const API_BASE_URL =
-    "https://backend-meta-request-pages-messaging.onrender.com";
-    
+  const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   // --- Effects ---
-    // MODIFIED: Kiểm tra trạng thái kết nối Meta
-    useEffect(() => {
-        fetch(`${API_BASE_URL}/meta/status`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.isConnected) {
-                setIsMetaConnected(true);
-            }
-        })
-        .catch(() => setIsMetaConnected(false));
-    }, [token]);
-
-    // Effect này sẽ chạy khi isMetaConnected là true
-    useEffect(() => {
-        if (isMetaConnected) {
-            fetchPermissions();
-            fetchPages();
+  // MODIFIED: Kiểm tra trạng thái kết nối Meta
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/meta/status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.isConnected) {
+          setIsMetaConnected(true);
         }
-    }, [isMetaConnected]);
+      })
+      .catch(() => setIsMetaConnected(false));
+  }, [token]);
 
+  // Effect này sẽ chạy khi isMetaConnected là true
+  useEffect(() => {
+    if (isMetaConnected) {
+      fetchPermissions();
+      fetchPages();
+    }
+  }, [isMetaConnected]);
 
   const fetchPermissions = () => {
-         fetch(`${API_BASE_URL}/meta/permissions`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => setPermissions(data.data || []));
-    };
-    
+    fetch(`${API_BASE_URL}/meta/permissions`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setPermissions(data.data || []));
+  };
 
   // MODIFIED: Tách fetchPages ra thành một hàm riêng
   const fetchPages = () => {
@@ -207,9 +201,12 @@ const handleLogout = () => {
     if (selectedPage && isMetaConnected) {
       setSelectedConversation(null);
       setMessages([]);
-      console.log ("SELECTED PAGE", selectedPage)
+      console.log("SELECTED PAGE", selectedPage);
       fetch(`${API_BASE_URL}/meta/pages/${selectedPage.id}/conversations`, {
-        headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token},
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-Page-Access-Token": selectedPage.access_token,
+        },
       })
         .then(async (res) => {
           if (!res.ok) {
@@ -217,16 +214,17 @@ const handleLogout = () => {
             throw new Error(errorData.error || "API call failed");
           }
           return res.json();
-            
-        } )
+        })
         .then((data) => setConversations(data.error ? [] : data))
         .catch((err) => {
           console.error("Fetch conversations failed:", err);
           if (err.message.toLowerCase().includes("token")) {
-            alert("Connect with Meta is expired. Please disconnect and connect again.");
+            alert(
+              "Connect with Meta is expired. Please disconnect and connect again."
+            );
             handleDisconnect();
           }
-        } )
+        });
     } else {
       setConversations([]);
     }
@@ -236,7 +234,12 @@ const handleLogout = () => {
   useEffect(() => {
     if (selectedConversation && isMetaConnected) {
       const url = `${API_BASE_URL}/meta/conversations/${selectedConversation.id}/messages?pageId=${selectedPage.id}`;
-      fetch(url, { headers: { Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token } })
+      fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-Page-Access-Token": selectedPage.access_token,
+        },
+      })
         .then((res) => res.json())
         .then((data) => setMessages(data.error ? [] : data))
         .catch((err) => console.error("Fetch messages failed:", err));
@@ -251,14 +254,14 @@ const handleLogout = () => {
     fetch(`${API_BASE_URL}/meta/connect`, {
       method: "GET",
       headers: { Authorization: `Bearer ${token}` },
-    }).then(res => res.json())
-    .then(data => {
-      if (data.authUrl) {
-        window.location.href = data.authUrl;
-      } else 
-        console.error("Meta authentication failed:", data.error);
     })
-    .catch(err => console.error("Meta authentication failed:", err));
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authUrl) {
+          window.location.href = data.authUrl;
+        } else console.error("Meta authentication failed:", data.error);
+      })
+      .catch((err) => console.error("Meta authentication failed:", err));
   };
 
   const handleDisconnect = () => {
@@ -288,7 +291,8 @@ const handleLogout = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, 'X-Page-Access-Token': selectedPage.access_token
+        Authorization: `Bearer ${token}`,
+        "X-Page-Access-Token": selectedPage.access_token,
       },
       body: JSON.stringify({
         pageId: selectedPage.id,
@@ -298,38 +302,43 @@ const handleLogout = () => {
     }).catch((err) => console.error("Send message request failed:", err));
   };
 
-   // FIXED: Hàm xử lý khi chọn một page
+  // FIXED: Hàm xử lý khi chọn một page
   // Thay thế hàm handlePageSelect cũ bằng hàm này trong Dashboard.js
 
-const handlePageSelect = (e) => {
+  const handlePageSelect = (e) => {
     const pageId = e.target.value;
     console.log("--- BẮT ĐẦU DEBUG ---");
     console.log("1. ID của Page vừa chọn từ dropdown:", pageId);
 
     if (!pageId) {
-        setSelectedPage(null);
-        return;
+      setSelectedPage(null);
+      return;
     }
 
     // In ra để xem danh sách pages có dữ liệu hay chưa
     console.log("2. Đang tìm kiếm trong danh sách pages sau:", pages);
-    
+
     const pageObject = pages.find((p) => p.id === pageId);
 
     // In ra kết quả của việc tìm kiếm
     console.log("3. Đã tìm thấy object page tương ứng:", pageObject);
-    
+
     setSelectedPage(pageObject);
     console.log("--- KẾT THÚC DEBUG ---");
-};
+  };
 
   // --- Render ---
   return (
     <div style={styles.container}>
       <div style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
-          <button onClick={handleLogout} style={{...styles.disconnectButton, backgroundColor: '#6c757d'}}>Logout Website</button>
-                <hr style={{margin: '15px 0'}}/>
+          <button
+            onClick={handleLogout}
+            style={{ ...styles.disconnectButton, backgroundColor: "#6c757d" }}
+          >
+            Logout Website
+          </button>
+          <hr style={{ margin: "15px 0" }} />
           {isMetaConnected ? (
             <>
               <button
