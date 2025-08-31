@@ -17,8 +17,8 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // --- Routes ---
-const authRoutes = require("./routes/auth.routes");
-const metaRoutes = require("./routes/meta.routes");
+const authRoutes = require("./routes/auth-routes");
+const metaRoutes = require("./routes/meta-routes");
 
 // Gắn các router vào ứng dụng
 app.use("/auth", authRoutes);

@@ -1,7 +1,7 @@
 // routes/meta.routes.js
 const express = require("express");
 const router = express.Router();
-const metaController = require("../controllers/meta.controller");
+const metaController = require("../controllers/meta-controller");
 const verifyToken = require("../middleware/verifyToken");
 
 // Meta Connection Flow
