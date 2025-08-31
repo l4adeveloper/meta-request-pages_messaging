@@ -18,7 +18,7 @@ exports.connect = (req, res) => {
   const userId = req.user.id;
   const state = userId;
   const scope =
-    "pages_show_list,pages_messaging,pages_read_engagement,pages_utility_messaging,pages_manage_metadata"; // Thêm các quyền khác nếu cần
+    "pages_show_list,pages_messaging,pages_read_engagement,pages_utility_messaging,pages_manage_metadata,pages_messaging_subscriptions"; // Thêm các quyền khác nếu cần
   const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}&response_type=code&state=${state}`;
   res.json({ authUrl });
 };
@@ -260,6 +260,9 @@ exports.verifyWebhook = (req, res) => {
 exports.handleWebhook = (req, res) => {
   console.log("Webhook received: ", req.body);
   const body = req.body;
+  // Dòng quan trọng nhất để debug
+  console.log("--- RAW WEBHOOK RECEIVED ---");
+  console.log(JSON.stringify(body, null, 2));
   if (body.object === "page") {
     body.entry.forEach((entry) => {
       entry.messaging.forEach((event) => {
