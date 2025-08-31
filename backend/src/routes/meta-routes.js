@@ -31,4 +31,8 @@ router.post("/send-message", verifyToken, metaController.sendMessage);
 router.get("/webhook", metaController.verifyWebhook);
 router.post("/webhook", metaController.handleWebhook);
 
+// OTN Tokens
+router.post("/offer-otn", verifyToken, metaController.offerOtn);
+router.post("/send-otn", verifyToken, metaController.sendOtn);
+
 module.exports = router;

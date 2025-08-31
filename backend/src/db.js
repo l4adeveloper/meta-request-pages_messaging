@@ -11,4 +11,9 @@ let users = [
   },
 ];
 
-module.exports = users;
+let otnTokens = {};
+
+module.exports = {
+  users,
+  otnTokens,
+};

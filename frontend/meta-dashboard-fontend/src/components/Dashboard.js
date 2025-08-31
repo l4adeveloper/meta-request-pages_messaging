@@ -327,6 +327,60 @@ function Dashboard() {
     console.log("--- KẾT THÚC DEBUG ---");
   };
 
+  // Thêm 2 hàm xử lý OTN
+  const handleOfferOtn = () => {
+    if (!selectedConversation)
+      return alert("Vui lòng chọn một cuộc trò chuyện.");
+
+    const offerPayload = {
+      pageId: selectedPage.id,
+      psid: selectedConversation.psid,
+      title: "Báo cho tôi khi có phản hồi", // Tiêu đề của lời mời
+      payload: `NOTIFY_REPLY_${selectedConversation.psid}`, // Dữ liệu để bạn nhận biết
+    };
+
+    fetch(`${API_BASE_URL}/meta/offer-otn`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Page-Access-Token": selectedPage.access_token,
+      },
+      body: JSON.stringify(offerPayload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) alert("Đã gửi lời mời nhận thông báo.");
+        else alert("Gửi lời mời thất bại: " + data.error);
+      });
+  };
+
+  const handleSendOtn = () => {
+    if (!selectedConversation)
+      return alert("Vui lòng chọn một cuộc trò chuyện.");
+
+    const otnPayload = {
+      pageId: selectedPage.id,
+      psid: selectedConversation.psid,
+      message: "Đây là tin nhắn thông báo bạn đã yêu cầu.",
+    };
+
+    fetch(`${API_BASE_URL}/meta/send-otn`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Page-Access-Token": selectedPage.access_token,
+      },
+      body: JSON.stringify(otnPayload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) alert("Đã gửi tin nhắn thông báo thành công.");
+        else alert("Gửi tin nhắn thất bại: " + data.error);
+      });
+  };
+
   // --- Render ---
   return (
     <div style={styles.container}>
@@ -433,6 +487,26 @@ function Dashboard() {
                 />
                 <button style={styles.sendButton} onClick={handleSendMessage}>
                   Gửi
+                </button>
+                <button
+                  onClick={handleOfferOtn}
+                  style={{
+                    ...styles.sendButton,
+                    marginLeft: "5px",
+                    backgroundColor: "#ffc107",
+                  }}
+                >
+                  Mời OTN
+                </button>
+                <button
+                  onClick={handleSendOtn}
+                  style={{
+                    ...styles.sendButton,
+                    marginLeft: "5px",
+                    backgroundColor: "#28a745",
+                  }}
+                >
+                  Gửi OTN
                 </button>
               </div>
             </>

@@ -1,6 +1,6 @@
 // controllers/meta.controller.js
 const axios = require("axios");
-const users = require("../db");
+const { users, otnTokens } = require("../db");
 
 const FB_APP_ID = process.env.APP_ID;
 const FB_APP_SECRET = process.env.APP_SECRET;
@@ -17,7 +17,8 @@ const getMetaTokenFromUser = (userId) => {
 exports.connect = (req, res) => {
   const userId = req.user.id;
   const state = userId;
-  const scope = "pages_show_list,pages_messaging,pages_read_engagement"; // Thêm các quyền khác nếu cần
+  const scope =
+    "pages_show_list,pages_messaging,pages_read_engagement,pages_utility_messaging,pages_manage_metadata"; // Thêm các quyền khác nếu cần
   const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=${scope}&response_type=code&state=${state}`;
   res.json({ authUrl });
 };
@@ -257,7 +258,99 @@ exports.verifyWebhook = (req, res) => {
 };
 
 exports.handleWebhook = (req, res) => {
-  console.log("Webhook received:", JSON.stringify(req.body, null, 2));
-  // TODO: Xử lý sự kiện webhook real-time (ví dụ: dùng Socket.IO để đẩy tin nhắn mới về frontend)
-  res.status(200).send("EVENT_RECEIVED");
+  console.log("Webhook received: ", req.body);
+  const body = req.body;
+  if (body.object === "page") {
+    body.entry.forEach((entry) => {
+      entry.messaging.forEach((event) => {
+        // KIỂM TRA SỰ KIỆN OPT-IN MỚI
+        if (event.optin && event.optin.type === "one_time_notif_req") {
+          const psid = event.sender.id;
+          const otnToken = event.optin.one_time_notif_token;
+
+          // Lưu token vào bộ nhớ
+          otnTokens[psid] = otnToken;
+          console.log(`Received and stored OTN token for user ${psid}`);
+        }
+
+        // Xử lý tin nhắn đến (có thể thêm logic để đẩy qua socket ở đây)
+        if (event.message) {
+          console.log("Received a message from", event.sender.id);
+        }
+      });
+    });
+    res.status(200).send("EVENT_RECEIVED");
+  } else {
+    res.sendStatus(404);
+  }
+};
+
+//Xử lý OTN
+exports.offerOtn = async (req, res) => {
+  const { pageId, psid, title, payload } = req.body;
+  const pageAccessToken = req.headers["x-page-access-token"];
+
+  if (!pageAccessToken || !psid || !title || !payload) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  const url = `https://graph.facebook.com/v19.0/me/messages`;
+  const body = {
+    recipient: { id: psid },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "one_time_notif_req",
+          title: title, // Ví dụ: "Báo cho tôi khi có hàng lại"
+          payload: payload, // Ví dụ: "NOTIFY_PRODUCT_123"
+        },
+      },
+    },
+  };
+
+  try {
+    await axios.post(url, body, { params: { access_token: pageAccessToken } });
+    res.json({ success: true, message: "OTN offer sent." });
+  } catch (error) {
+    console.error("Error sending OTN offer:", error.response?.data?.error);
+    res.status(500).json({ error: "Failed to send OTN offer." });
+  }
+};
+
+//Gửi thông báo OTN
+exports.sendOtn = async (req, res) => {
+  const { pageId, psid, message } = req.body;
+  const pageAccessToken = req.headers["x-page-access-token"];
+
+  // Lấy OTN token đã lưu
+  const otnToken = otnTokens[psid];
+
+  if (!otnToken) {
+    return res
+      .status(400)
+      .json({ error: "No available OTN token for this user." });
+  }
+
+  const url = `https://graph.facebook.com/v19.0/me/messages`;
+  const body = {
+    recipient: { id: psid },
+    message: { text: message },
+    messaging_type: "MESSAGE_TAG",
+    tag: "ONE_TIME_NOTIF", // Tag đặc biệt cho OTN
+  };
+
+  try {
+    await axios.post(url, body, {
+      params: { access_token: pageAccessToken, one_time_notif_token: otnToken },
+    });
+
+    // Xóa token sau khi đã sử dụng
+    delete otnTokens[psid];
+
+    res.json({ success: true, message: "OTN message sent." });
+  } catch (error) {
+    console.error("Error sending OTN message:", error.response?.data?.error);
+    res.status(500).json({ error: "Failed to send OTN message." });
+  }
 };
