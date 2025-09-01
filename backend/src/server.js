@@ -23,6 +23,9 @@ const metaRoutes = require("./routes/meta-routes");
 // Gắn các router vào ứng dụng
 app.use("/auth", authRoutes);
 app.use("/meta", metaRoutes);
+app.get("/", (req, res) => {
+  res.send("htllo");
+});
 
 // --- Khởi động Server ---
 app.listen(PORT, () => {
